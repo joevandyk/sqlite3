@@ -27,6 +27,29 @@ class TestDatabaseQueriesUtf8 < Test::Unit::TestCase
     assert_nil row[5]
   end
 
+  def test_changes
+    assert_equal 0, @db.changes
+    @db.execute("INSERT INTO t1 VALUES(NULL, 'text1', 1.22, 42, 4294967296, NULL)")
+    @db.execute("INSERT INTO t1 VALUES(NULL, 'text1', 1.22, 42, 4294967296, NULL)")
+    assert_equal 1, @db.changes
+    @db.execute("update t1 set t = null")
+    assert_equal 2, @db.changes
+
+    last_id = @db.execute("select id from t1 limit 1")[0]
+    @db.execute("delete from t1 where id=?", last_id)
+    assert_equal 1, @db.changes
+
+    @db.execute("delete from t1")
+    assert_equal 0, @db.changes
+  end
+
+  # This test requires the existence of the reset method
+  def test_reset
+    query = "INSERT INTO t1 VALUES(1, 'text1', 1.22, 42, 4294967296, NULL)"
+    @db.execute(query)
+    assert_raise(SQLite3::SQLException) { @db.execute(query) }
+  end
+
   def test_execute_with_bindings
     blob = open("test/fixtures/SQLite.gif", "rb").read
     @db.execute("INSERT INTO t1 VALUES(?, ?, ?, ?, ?, ?)", nil, "text1", 1.22, 42, 4294967296, blob)

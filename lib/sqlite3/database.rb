@@ -260,9 +260,14 @@ module SQLite3
     # Returns the number of changes made to this database instance by the last
     # operation performed. Note that a "delete from table" without a where
     # clause will not affect this value.
-    # def changes
-    #   @driver.changes(@handle)
-    # end
+    def changes
+      @driver.changes(@handle)
+    end
+   
+    # Resets a prepared statement object
+    def reset
+      @driver.reset(@handle)
+    end
 
     # Returns the total number of changes made to this database instance
     # since it was opened.
